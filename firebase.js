@@ -8,6 +8,8 @@ import {
   addDoc,
   getDocs,
   query,
+  doc,
+  deleteDoc,
 } from "firebase/firestore";
 
 // Your web app's Firebase configuration
@@ -25,4 +27,14 @@ const app = initializeApp(firebaseConfig);
 const analytics = isSupported().then((yes) => (yes ? getAnalytics(app) : null));
 const db = getFirestore(app);
 
-export { app, db, getFirestore, collection, addDoc, getDocs, query };
+export {
+  app,
+  db,
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  doc,
+  deleteDoc,
+};

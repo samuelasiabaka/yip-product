@@ -17,8 +17,11 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
+import Spinner from "react-native-loading-spinner-overlay";
+
 // Context
 import { ProductContext } from "../context/ProductContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddProduct() {
   const { products, setProducts, loading, setLoading } =
@@ -33,6 +36,7 @@ export default function AddProduct() {
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
+    setLoading(true);
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -43,6 +47,7 @@ export default function AddProduct() {
     if (!result.canceled) {
       setImage(result.assets[0].uri);
     }
+    setLoading(false);
   };
 
   //   upload to firebase
@@ -52,10 +57,14 @@ export default function AddProduct() {
       return;
     }
 
-    // if (products.length >= 10) {
-    //   Alert.alert("Maximum upload products reached");
-    //   return;
-    // }
+    if (products?.length >= 5) {
+      Alert.alert("Maximum upload products added");
+      setProductName("");
+      setProductPrice("");
+      setImage(null);
+      return;
+    }
+    setLoading(true);
 
     // Test code
     const storage = getStorage();
@@ -87,11 +96,20 @@ export default function AddProduct() {
     setProductName("");
     setProductPrice("");
     setImage(null);
+    setLoading(false);
   };
 
   return (
     <ScrollView keyboardShouldPersistTaps="handled">
       <View style={styles.container}>
+        <Spinner
+          //visibility of Overlay Loading Spinner
+          visible={loading}
+          //Text with the Spinner
+          // textContent={"Loading..."}
+          //Text style of the Spinner Text
+          textStyle={styles.spinnerTextStyle}
+        />
         <View style={styles.title}>
           <Text style={styles.titleTxt}>Add a New Product</Text>
         </View>
@@ -102,6 +120,9 @@ export default function AddProduct() {
               style={{ width: 200, height: 200 }}
             />
           )}
+          <TouchableOpacity style={styles.imgBtn} onPress={pickImage}>
+            <Text style={styles.primaryBtnTxt}>Select Image</Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.inputContainer}>
           <TextInput
@@ -119,15 +140,13 @@ export default function AddProduct() {
           />
         </View>
         <View>
-          <Button
-            style={styles.btn}
-            title="Pick an image from camera roll"
-            onPress={pickImage}
-          />
           <TouchableOpacity style={styles.primaryBtn} onPress={handleUpload}>
             <Text style={styles.primaryBtnTxt}>Upload Product</Text>
           </TouchableOpacity>
         </View>
+      </View>
+      <View style={styles.noProduct}>
+        <Text>Number of product(s): {products?.length}</Text>
       </View>
     </ScrollView>
   );
@@ -138,6 +157,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     marginTop: 20,
+    gap: 10,
+  },
+  spinnerTextStyle: {
+    color: "#FFF",
   },
   title: {},
   titleTxt: {
@@ -145,6 +168,14 @@ const styles = StyleSheet.create({
   },
   imgContainer: {
     marginVertical: 20,
+    gap: 10,
+  },
+  imgBtn: {
+    width: "auto",
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 8,
+    backgroundColor: "#5DA3FA",
   },
   inputContainer: {
     alignItems: "center",
@@ -175,5 +206,9 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     fontWeight: "700",
+  },
+  noProduct: {
+    alignItems: "center",
+    marginTop: "90%",
   },
 });

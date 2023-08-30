@@ -1,12 +1,85 @@
-import { StyleSheet, Text, View, Image } from "react-native";
-import React from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  Alert,
+  Modal,
+  Pressable,
+} from "react-native";
+import React, { useState, useContext } from "react";
+import { db, doc, deleteDoc } from "../../firebase";
+
+import Spinner from "react-native-loading-spinner-overlay";
+
+import { ProductContext } from "../context/ProductContext";
 
 const ProductItem = ({ product }) => {
-  console.log("Product List from Product Item", product);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const { loading, setLoading } = useContext(ProductContext);
+
+  // Delete product
+  const handleDelete = () => {
+    setModalVisible(!modalVisible);
+    const docRef = doc(db, "products", product.id);
+
+    setLoading(true);
+
+    deleteDoc(docRef)
+      .then(() => {
+        setLoading(false);
+        Alert.alert("Successfuly Deleted Product");
+        console.log("Entire Document has been deleted successfully.");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
   return (
     <View style={styles.container}>
-      <Image source={{ uri: product.imageUrl }} style={styles.image} />
-
+      <Spinner
+        //visibility of Overlay Loading Spinner
+        visible={loading}
+        //Text with the Spinner
+        // textContent={"Loading..."}
+        //Text style of the Spinner Text
+        textStyle={styles.spinnerTextStyle}
+      />
+      {/* Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          // Alert.alert("Modal has been closed.");
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.name}>
+              Are you sure you want to delete product?
+            </Text>
+            <View style={styles.confirmBtn}>
+              <Pressable style={[styles.primaryBtn]} onPress={handleDelete}>
+                <Text style={styles.textStyle}>Yes</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.primaryBtn]}
+                onPress={() => setModalVisible(!modalVisible)}
+              >
+                <Text style={styles.textStyle}>No</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      {/* Modal ends */}
+      <View>
+        <Image source={{ uri: product.imageUrl }} style={styles.image} />
+      </View>
       <View>
         <Text style={styles.name}>{product.name}</Text>
 
@@ -16,14 +89,41 @@ const ProductItem = ({ product }) => {
           </Text>
         </View>
       </View>
+      <View>
+        <TouchableOpacity
+          style={styles.primaryBtn}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text style={styles.primaryBtnTxt}>Delete Product</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    margin: 8,
     flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 20,
+  },
+  modalView: {
+    gap: 10,
+    marginHorizontal: 20,
+    marginTop: "50%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   rowContainer: {
     flexDirection: "row",
@@ -47,41 +147,31 @@ const styles = StyleSheet.create({
   priceContainer: {
     marginBottom: 12,
   },
-  rating: {
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    justifyContent: "center",
-    backgroundColor: "#008c00",
-
-    marginRight: 4,
+  primaryBtn: {
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 8,
+    backgroundColor: "#5DA3FA",
   },
-  ratingText: {
+  primaryBtnTxt: {
     color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
+    textAlign: "center",
+    fontWeight: "700",
   },
-  ratingCount: {
-    color: "#878787",
+  buttonClose: {
+    backgroundColor: "#5DA3FA",
   },
-  originalPrice: {
-    fontSize: 18,
-    marginRight: 4,
-    fontWeight: "600",
-
-    color: "rgba(0, 0, 0, 0.5)",
-    textDecorationLine: "line-through",
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
   },
-  discountPrice: {
-    fontSize: 18,
-    marginRight: 4,
-    fontWeight: "600",
-
-    color: "#000000",
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
   },
-  offerPercentage: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: "#4bb550",
+  confirmBtn: {
+    flexDirection: "row",
   },
 });
 

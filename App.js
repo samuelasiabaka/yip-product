@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 
 // Navigation
 import { NavigationContainer } from "@react-navigation/native";
@@ -30,7 +30,7 @@ export default function App() {
             name="Add Product"
             component={AddProduct}
             options={{
-              title: "Add",
+              title: "",
             }}
           />
         </Stack.Navigator>
